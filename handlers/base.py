@@ -5,7 +5,7 @@ import logging
 from common.database import sql
 from common.jobs import jobs
 from random import choice, randint
-
+from common.proxylist  import proxy
 root_path = path.dirname(path.realpath(__file__))[:-9]
 
 logger = logging.getLogger('base')
@@ -24,6 +24,7 @@ class base_commands(object):
         """@todo: to be defined1. """
         self.db = sql()
         self.job = jobs()
+        self.proxy = proxy()
 
     def ping(self):
         """@todo: Docstring for ping.
@@ -51,20 +52,35 @@ class base_commands(object):
         """
         return self.job.get_control(name)
 
-    def get_job(self,  **kwargs):
+    def refresh_proxy(self):
+        """@todo: Docstring for refresh_proxy.
+        :returns: @todo
+
+        """
+        try:
+            self.proxy.get_proxy_premium()
+            return "Proxy list are fresh"
+        except:
+            return 'Error refreshing proxy list'
+
+    def get_job(self, name):
         """@todo: Docstring for get_job.
 
         :**kwargs: @todo
         :returns: @todo
 
         """
-        if kwargs.has_key('project'):
-            project = kwargs['project']
-            url = choice(self.job.get_job_link(project))
-        else:
-            project = None
-            url = None
-        return url
+        resp = {}
+        try:
+            url = choice(self.job.get_job_link(name))
+        except:
+            url = 'None'
+        resp['proxy']  = self.job.get_random_proxy()
+        resp['url'] = url
+        resp['ua'] = self.job.get_random_ua()
+        return resp 
+
+
 
 
 

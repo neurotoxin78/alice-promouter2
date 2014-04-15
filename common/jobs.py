@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from ConfigParser import SafeConfigParser
 from os import path
+from random import choice 
 root_path = path.dirname(path.realpath(__file__))[:-6]
 job_path = root_path + 'jobs/'
 
@@ -11,7 +12,7 @@ class jobs(object):
 
     def __init__(self):
         """@todo: to be defined1. """
-        self.cfg = SafeConfigParser()
+        
 
     def get_control(self, name):
         """@todo: Docstring for get_control.
@@ -20,10 +21,15 @@ class jobs(object):
         :returns: @todo
 
         """
+        
         _path = job_path + name + "/"
-        self.cfg.read(_path+"control")
-        cfg_dict = dict(self.cfg._sections['global']) 
-        return cfg_dict
+        if path.exists(_path):
+            cfg = SafeConfigParser()
+            cfg.read(_path+"control")
+            cfg_dict = dict(cfg._sections['global']) 
+        else:
+            cfg_dict = 'Error: project not found'
+        return cfg_dict 
         
 
     def get_config(self,  name):
@@ -34,9 +40,33 @@ class jobs(object):
 
         """
         _path = job_path + name + "/"
-        self.cfg.read(_path+"config")
-        cfg_dict = dict(self.cfg._sections['global']) 
-        return cfg_dict
+        if path.exists(_path):
+            cfg = SafeConfigParser()
+            cfg.read(_path+"config")
+            cfg_dict = dict(cfg._sections['global']) 
+        else:
+            cfg_dict = 'Error: project not found'
+        return cfg_dict 
+
+    def get_random_proxy(self):
+        """@todo: Docstring for get_random_proxy.
+        :returns: @todo
+
+        """
+        with open(root_path+"/data/lists/alive.list","r") as f:
+            alive_list = f.readlines()
+        
+        return choice(alive_list)[:-1]
+
+    def get_random_ua(self):
+        """@todo: Docstring for get_random_ua.
+        :returns: @todo
+
+        """
+        with open(root_path+"/data/uas/uas.txt", "r") as f:
+            ua_list = f.readlines()
+        return choice(ua_list)[:-1]
+
 
     def get_job_link(self,  name):
         """@todo: Docstring for get_job_data.
@@ -46,12 +76,13 @@ class jobs(object):
 
         """
         _path = job_path + name + "/"
-
-        try:
-            with open(_path+'internal_urls', 'r') as f:
-                urls = f.read().split()
-        except:
-            print "Error"
-
+        if path.exists(_path):        
+            try:
+                with open(_path+'internal_urls', 'r') as f:
+                    urls = f.read().split()
+            except:
+                print "Error opening a url file"
+        else:
+            urls = 'Error: project not found on this server'
         return urls 
 
