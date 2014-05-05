@@ -30,6 +30,42 @@ class base_commands(object):
         self.job = jobs()
         self.proxy = proxy()
 
+    def check_user(self,  data):
+        """@todo: Docstring for check_user.
+
+        :data: @todo
+        :returns: @todo
+
+        """
+        try:
+            login = data['login']
+            passw = data['password']
+            user_data = self.db.get_user(login)
+            if user_data != None:
+                ## Check password
+                if passw == user_data[2]:
+                    return True
+                else:
+                    return 'wrong password'
+        except:
+            return 'invalid request struct'
+        
+    def register(self,  data):
+        """@todo: Docstring for register.
+
+        :data: @todo
+        :returns: @todo
+
+
+        """
+        auth = self.check_user(data)
+        if auth == True:
+            return self.db.register_client(data)
+        else:
+            return auth
+
+
+
     def ping(self):
         """@todo: Docstring for ping.
         :returns: @todo

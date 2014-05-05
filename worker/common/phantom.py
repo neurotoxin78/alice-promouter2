@@ -5,7 +5,7 @@ from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from tools import job
 from time import sleep 
-from os import path
+from os import path, listdir, unlink
 root_path = path.dirname(path.realpath(__file__))[:-6]
 job_path = root_path + 'jobs/'
 #print job_path
@@ -29,7 +29,47 @@ class worker(object):
     def __init__(self):
         """@todo: to be defined1. """
         self.job = job()
+        # clear all pids
+        for prj in listdir(job_path):
+            for files in  listdir(job_path+prj + '/pids/'):
+                try:
+                    unlink(job_path+prj+'/pids/'+files)
+                except:
+                    pass 
 
+    def clear_pids(self,  name):
+        """@todo: Docstring for clear_pids.
+
+        :name: @todo
+        :returns: @todo
+
+        """
+        _path = job_path + name + "/"
+        if path.exists(_path):        
+            try:
+                pids = listdir(_path+'pids/')
+                for files in pids:
+                    unlink(files)
+            except:
+                pass
+        else:
+            return 'Error: project not found on this server'
+        
+
+    def get_pids_list(self, name):
+        """@todo: Docstring for get_pids_list.
+        :returns: @todo
+
+        """
+        _path = job_path + name + "/"
+        if path.exists(_path):        
+            try:
+                return listdir(_path+'pids/')  
+            except:
+                return []
+        else:
+            return 'Error: project not found on this server'
+        
     def visit(self,  driver, url):
         """@todo: Docstring for visit.
 
@@ -50,7 +90,8 @@ class worker(object):
         :name: @todo
         :returns: @todo
 
-        """        
+        """       
+        
         ## Get Key
         key = self.job.get_job_key(name)
         ## Get Config
@@ -69,7 +110,9 @@ class worker(object):
             driver.set_window_size(1920, 1024) # optional
             driver.set_page_load_timeout(15)
             driver.set_script_timeout(15)
+            #Store pid
             self.job.store_pid(name, driver.service.process.pid) 
+            print self.get_pids_list(name)
             # Do some
             self.visit(driver, url)
             sleep(10)
@@ -78,7 +121,7 @@ class worker(object):
                 driver.close()
             except:
                 pass 
-            self.job.delete_pid(name, driver.service.process.pid)
+
             sleep(10)
 
 if __name__ == '__main__':

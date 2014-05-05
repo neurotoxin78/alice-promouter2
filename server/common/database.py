@@ -5,7 +5,7 @@ import logging as Log
 Log.basicConfig( level = Log.DEBUG,format = '%(name)s -  %(message)s' )
 root_path = path.dirname(path.realpath(__file__))[:-7]
 import sqlite3
-from server.common.crypto import crypto
+from crypto import crypto
 
 
 class sql(object):
@@ -16,12 +16,12 @@ class sql(object):
         """@todo: to be defined1. """
         self.c = crypto()
 
-    def connect(self):
+    def connect(self, db):
         """@todo: Docstring for connect.
         :returns: @todo
 
         """
-        return sqlite3.connect(root_path+"/data/alice.db")
+        return sqlite3.connect(root_path+"/data/"+db)
 
 
     def user_exist(self,  **kwargs):
@@ -43,56 +43,53 @@ class sql(object):
                     return False
         else:
             return None
-    
-    def get_key(self,  **kwargs):
+
+    def get_user(self,  login):
         """@todo: Docstring for get_key.
 
         :name: @todo
         :returns: @todo
 
         """
-        with self.connect() as conn:
+        with self.connect('users.db') as conn:
 	    cur = conn.cursor()
-	    cur.execute('select key from users where name="'+kwargs['name']+'";')
-	    return cur.fetchone()[0]
-
-    def get_user(self,  **kwargs):
-        """@todo: Docstring for get_key.
-
-        :name: @todo
-        :returns: @todo
-
-        """
-        with self.connect() as conn:
-	    cur = conn.cursor()
-	    cur.execute('select * from users where name="'+kwargs['name']+'";')
+	    cur.execute('select * from users where login="'+login+'";')
 	    return cur.fetchone()
 
+    def client_exist(self, key):
+        """@todo: Docstring for client_exist.
 
-    def register_user(self, **kwargs):
+        :data: @todo
+        :returns: @todo
+
+        """
+        with self.connect('client.db') as conn:
+	    cur = conn.cursor()
+	    cur.execute('select * from clients where key="'+key+'";')
+	    return cur.fetchall()
+        
+
+    def register_client(self, data):
         """@todo: Docstring for register_user.
 
         :**kwargs: @todo
         :returns: @todo
 
         """
-        if kwargs.has_key('name'):
-            if self.user_exist(**kwargs) == False:
-                ## Make User 
-                name = kwargs['name']
-                key = self.c.gen_uniq_key()
-                with self.connect() as conn:
-	            cur = conn.cursor()
-	            cur.execute('insert into users(name,key) values(?, ?);', (name, key))
-	            conn.commit()
-
-                rd = {}
-
-                return key
-            else:
-                return 'user exist'
+        key = data['uid']
+        address = 'https://'+data['inbound_ip']+':3334/'
+        if not self.client_exist(key):
+            with self.connect('client.db') as conn:
+                cur = conn.cursor()
+        	cur.execute('insert into clients(key,address) values(?, ?);', (key, address))
+        	conn.commit()
+                return 'Client rigistered successfully'
         else:
-            return 'name is required'
-
+            return 'Client exist'
     
+if __name__ == '__main__':
+    db = sql()
+    ar = {}
+    ar['name'] = 'neuro'
+    print db.get_user('neuro')
 

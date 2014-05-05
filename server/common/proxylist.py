@@ -49,7 +49,7 @@ class proxy(object):
                 except:
                     print "Bad proxy" 
     
-    def get_proxy_premium(self,  code='989570157'):
+    def get_proxy_premium(self,  code='280260282'):
         """@todo: Docstring for get_proxy_premium.
 
         :code: @todo
